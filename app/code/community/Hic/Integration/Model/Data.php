@@ -53,48 +53,48 @@ class Hic_Integration_Model_Data extends Varien_Object
     }
 
     /**
-     * Return JSON string representing data object
-     *
-     * @return string
-     */
-    public function hicData()
-    {
-        $data = $this->toArray(array('page', 'cart', 'user','tr','version','platform','pid','product'));
-        $data = array_filter($data);
-        $obj = new Varien_Object($data);
-        if ($obj && $data) {
-            return Zend_Json::encode($obj->getData());
-        }
-    }
-
-    /**
      * Returns product information for each product
      * passed into function
      *
-     * @param $items
-     * @return array
+     * @param array $items
+     * @return array $data
      */
     protected function _getCartItems($items)
     {
         $data = array();
-        foreach ($items as $i) {
-            $product = Mage::getModel('catalog/product')->load($i->getProductId());
-            if ($product) {
-                $info = array();
-                $info['tt'] = (float)$i->getRowTotalInclTax();
-                $info['ds'] = (float)$i->getDiscountAmount();
-                $info['qt'] = (float)$i->getQty();
-                $info['id'] = $product->getId();
-                $info['url'] = $product->getProductUrl();
-                $info['nm'] = $product->getName();
-                $info['bpr'] = (float)$product->getPrice();
-                $info['pr'] = (float)$product->getFinalPrice();
-                $info['desc'] = strip_tags($product->getShortDescription());
-                $info['img'] = $product->getImageUrl();
-                $info['sku'] = $product->getSku();
-                $info['cat'] = $product->getCategoryIds();
-                $data[] = $info;
+
+        // build list of product IDs from either cart or transaction object.
+        $productIds = array();
+        foreach ($items as $item) {
+            $productIds[] = $item->getProduct()->getId();
+        }
+
+        // request item information from product collection catalog
+        $collection = Mage::getResourceModel('catalog/product_collection')
+            ->addFieldToFilter('entity_id', array('in' => $productIds ) )
+            ->addAttributeToSelect(array('name','description'));
+        $count = 0;
+
+        // TODO: Swap Description for ShortDescription
+        foreach ($collection as $product) {
+            $info = array();
+            $info['ds'] = (float)$items[$count]->getDiscountAmount();
+            $info['tx'] = (float)$items[$count]->getTaxAmount();
+            $info['qt'] = (float)$items[$count]->getQty();
+            $info['pr'] = (float)$items[$count]->getRowTotalInclTax();
+            $info['bpr'] = (float)$items[$count]->getPrice();
+            if ( $this->helper()->isConfirmation()) {
+                $info['qt'] = (float)$items[$count]->getQtyOrdered();
             }
+            $info['desc'] = strip_tags($product->getDescription());
+            $info['id'] = $product->getId();
+            $info['url'] = $product->getProductUrl();
+            $info['nm'] = $product->getName();
+            $info['img'] = $product->getImageUrl();
+            $info['sku'] = $product->getSku();
+            $info['cat'] = $product->getCategoryIds();
+            $data[] = $info;
+            $count = $count + 1;
         }
         return $data;
     }
@@ -110,10 +110,12 @@ class Hic_Integration_Model_Data extends Varien_Object
         foreach (Mage::helper('catalog')->getBreadcrumbPath() as $item) {
             $crumb[] = $item['label'];
         }
-        $this->setPage(array(
-            'route' => $this->helper()->getRoute(),
-            'bc' => $crumb
-        ));
+        $this->setPage(
+            array(
+                'route' => $this->helper()->getRoute(),
+                'bc' => $crumb
+            )
+        );
         return $this;
     }
 
@@ -124,25 +126,26 @@ class Hic_Integration_Model_Data extends Varien_Object
      */
     protected function _initCart()
     {
-        $cart = Mage::getModel('checkout/cart')->getQuote();
-        if ($cart->getItemsCount() > 0) {
+        $cart = Mage::getModel('checkout/cart');
+        $cartQuote = $cart->getQuote();
+        if ($cartQuote->getItemsCount() > 0) {
             $data = array();
-            if ($cart->getId()) {
-                $data['id'] = (string)$cart->getId();
+            if ($cartQuote->getId()) {
+                $data['id'] = (string)$cartQuote->getId();
             }
-            if ($cart->getSubtotal()) {
-                $data['st'] = (float)$cart->getSubtotal();
+            if ($cartQuote->getSubtotal()) {
+                $data['st'] = (float)$cartQuote->getSubtotal();
             }
-            if ($cart->getGrandTotal()) {
-                $data['tt'] = (float)$cart->getGrandTotal();
+            if ($cartQuote->getGrandTotal()) {
+                $data['tt'] = (float)$cartQuote->getGrandTotal();
             }
-            if ($cart->getItemsCount()) {
-                $data['qt'] = (float)$cart->getItemsCount();
+            if ($cartQuote->getItemsCount()) {
+                $data['qt'] = (float)$cartQuote->getItemsCount();
             }
             if (Mage::app()->getStore()->getCurrentCurrencyCode()) {
                 $data['cu'] = Mage::app()->getStore()->getCurrentCurrencyCode();
             }
-            $data['li'] = $this->_getCartItems($cart->getAllVisibleItems());
+            $data['li'] = $this->_getCartItems($cartQuote->getAllVisibleItems());
             $this->setCart($data);
             return $this;
         }
@@ -163,12 +166,11 @@ class Hic_Integration_Model_Data extends Varien_Object
             $data['ht'] = false;
             $data['nv'] = true;
             $data['cg'] = Mage::getSingleton('customer/session')->getCustomerGroupId();
-            $data['sid'] = Mage::getSingleton("core/session")->getEncryptedSessionId();
             if ($customer->getId()) {
                 // Determine if customer has transacted or not.  Must be logged in.
                 $orders = Mage::getModel('sales/order')->getCollection();
-                $orders->addAttributeToFilter('customer_id',$customer->getId());
-                if ($orders){
+                $orders->addAttributeToFilter('customer_id', $customer->getId());
+                if ($orders) {
                     $data['ht'] = $orders->getSize() > 0;
                 }
                 if ($customer->getDob()) {
@@ -255,6 +257,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Helper reference
+     *
+     * @return Mage_Core_Helper_Abstract
+     */
     protected function helper()
     {
         return Mage::helper('integration');

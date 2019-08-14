@@ -30,6 +30,7 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     const SETTINGS_ENABLED   = 'integration/settings/enabled';
     const SETTINGS_ENABLED_2 = 'integration/settings/enabled_2';
     const SETTINGS_SITE_ID   = 'integration/settings/site_id';
+    const EXTENSION_VERSION  = '1.1.0';
 
     /**
      * Returns Site ID from Configuration
@@ -66,9 +67,15 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
      *
      * @return object
      */
-    public function getHicData()
+    public function hicData()
     {
-        return Mage::getModel('integration/data');
+        $model = Mage::getModel('integration/data');
+        $data = $model->toArray(array('page', 'cart', 'user','tr','version','platform','pid','product'));
+        $data = array_filter($data);
+        $obj = new Varien_Object($data);
+        if ($obj && $data) {
+            return Zend_Json::encode($obj->getData());
+        }
     }
 
     /**
@@ -80,6 +87,16 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     {
         $route = Mage::app()->getFrontController()->getAction()->getFullActionName();
         return $route;
+    }
+
+    /**
+     * Return extension version
+     *
+     * @return string
+     */
+    public function getVersion()
+    {
+        return self::EXTENSION_VERSION;
     }
 
     /**
@@ -102,5 +119,4 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
         $request = Mage::app()->getRequest();
         return false !== strpos($request->getRouteName(), 'checkout') && 'success' == $request->getActionName();
     }
-
 }

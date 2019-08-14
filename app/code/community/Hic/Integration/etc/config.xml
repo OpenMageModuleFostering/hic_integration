@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <config>
     <modules>
-        <integration>
+        <Hic_Integration>
             <version>1.0</version>
-        </integration>
+        </Hic_Integration>
     </modules>
     <global>
         <models>
@@ -17,17 +17,30 @@
             </integration>
         </helpers>
         <blocks>
-            <page>
-                <rewrite>
-                    <html_head>Hic_Integration_Block_Html_Head</html_head>
-                </rewrite>
-            </page>
             <integration>
                 <class>Hic_Integration_Block</class>
             </integration>
         </blocks>
     </global>
     <frontend>
+        <events>
+            <controller_action_postdispatch>
+                <observers>
+                    <integration_intercept_response>
+                        <class>integration/observer</class>
+                        <method>interceptResponse</method>
+                    </integration_intercept_response>
+                </observers>
+            </controller_action_postdispatch>
+            <controller_action_layout_render_before>
+                <observers>
+                    <integration_check_response>
+                        <class>integration/observer</class>
+                        <method>checkResponseType</method>
+                    </integration_check_response>
+                </observers>
+            </controller_action_layout_render_before>
+        </events>
         <layout>
             <updates>
                 <integration>

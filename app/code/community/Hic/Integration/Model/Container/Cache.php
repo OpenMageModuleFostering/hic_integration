@@ -19,34 +19,43 @@
  */
 
 /**
- * Integration container template model
+ * Integration container to hole-punch
  *
  * @category Hic
  * @package Integration
  * @author HiConversion <support@hiconversion.com>
  */
-class Hic_Integration_Model_Container_Template extends Enterprise_PageCache_Model_Container_Advanced_Quote
+class Hic_Integration_Model_Container_Cache extends Enterprise_PageCache_Model_Container_Abstract
 {
     /**
-     * Render block content
+     * Get container individual cache id
      *
      * @return string
      */
+    protected function _getCacheId()
+    {
+        return 'HICONVERSION' . md5($this->_placeholder->getAttribute('cache_id')) . '_' . $this->_getCookieValue(Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER, '');
+    }
+
+    /**
+     * Render block content
+     *
+     * @return mixed
+     */
     protected function _renderBlock()
     {
-        $block = $this->_placeholder->getAttribute('block');
+        $blockClass = $this->_placeholder->getAttribute('block');
         $template = $this->_placeholder->getAttribute('template');
- 
-        $block = new $block;
+        $block = new $blockClass;
         $block->setTemplate($template);
-        $block->setLayout(Mage::app()->getLayout());
- 
         return $block->toHtml();
     }
 
     /**
-     * @param $data
-     * @param $id
+     * Save cache
+     *
+     * @param string $data
+     * @param string $id
      * @param array $tags
      * @param null $lifetime
      * @return bool
