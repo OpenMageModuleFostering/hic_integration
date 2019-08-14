@@ -27,18 +27,47 @@
  */
 class Hic_Integration_Model_Observer
 {
-    protected static $isHead = FALSE;
-    protected static $isRendered = FALSE;
+    protected static $_isHead = false;
+    protected static $_isRendered = false;
+    protected static $_clearCache = false;
+
+    /**
+     * Is Enabled Full Page Cache
+     *
+     * @var bool
+     */
+    protected $_isEnabled;
+
+    /**
+     * Class constructor
+     */
+    public function __construct()
+    {
+        $this->_isEnabled = Mage::app()->useCache('full_page');
+    }
+
+    /**
+     * Check if full page cache is enabled
+     *
+     * @return bool
+     */
+    public function isCacheEnabled()
+    {
+        return $this->_isEnabled;
+    }
 
     /**
      * Check 'controller_action_layout_render_before' event response
      * type to determine if it is a HTML page response
+     *
+     * @return $this
      */
     public function checkResponseType()
     {
         if (Mage::app()->getLayout()->getBlock('head')) {
-            self::$isHead = TRUE;
+            self::$_isHead = true;
         }
+        return $this;
     }
 
     /**
@@ -46,21 +75,47 @@ class Hic_Integration_Model_Observer
      * to inject block at top of head
      *
      * @param Varien_Event_Observer $observer
+     * @return $this
      */
     public function interceptResponse(Varien_Event_Observer $observer)
     {
-        if (self::$isHead && !self::$isRendered) {
+        if (self::$_isHead && !self::$_isRendered) {
             $layout = Mage::getSingleton('core/layout');
-            $tag = $layout->createBlock('integration/tag', 'hic.integration.tag')->setTemplate('hic/head.phtml')->toHtml();
-            $response = $observer->getEvent()->getControllerAction()->getResponse();
-            // TODO: Will this always be <HEAD>
+            $tag = $layout
+                ->createBlock('integration/tag', 'hic.integration.tag')
+                ->setTemplate('hic/head.phtml')
+                ->toHtml();
+            $response = $observer->getEvent()
+                ->getControllerAction()
+                ->getResponse();
             $openHeadTag = '<head>';
             $pos = strpos($response, $openHeadTag);
             if ($pos !== false && $layout && $tag && $response) {
                 $newStr = substr_replace($response, $tag, $pos + strlen($openHeadTag), 0);
                 $response->setBody($newStr);
-                self::$isRendered = TRUE;
+                self::$_isRendered = true;
             }
         }
+        return $this;
+    }
+
+
+    /**
+     * Clear placeholder cache for
+     *
+     * @return $this
+     */
+    public function flushCache()
+    {
+        if (!$this->isCacheEnabled()) {
+            return $this;
+        }
+        if (self::$_clearCache == false) {
+            $cacheId = Hic_Integration_Model_Container_Cache::getCacheId();
+            Enterprise_PageCache_Model_Cache::getCacheInstance()
+                ->remove($cacheId);
+            self::$_clearCache = true;
+        }
+        return $this;
     }
 }

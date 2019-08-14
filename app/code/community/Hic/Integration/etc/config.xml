@@ -40,6 +40,14 @@
                     </integration_check_response>
                 </observers>
             </controller_action_layout_render_before>
+            <checkout_cart_save_after>
+                <observers>
+                    <integration_flush_cache>
+                        <class>integration/observer</class>
+                        <method>flushCache</method>
+                    </integration_flush_cache>
+                </observers>
+            </checkout_cart_save_after>
         </events>
         <layout>
             <updates>

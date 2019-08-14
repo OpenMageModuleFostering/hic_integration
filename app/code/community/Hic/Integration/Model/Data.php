@@ -27,13 +27,13 @@
  */
 class Hic_Integration_Model_Data extends Varien_Object
 {
-    protected $_version = '1.0';
+    protected $_version = '1.1';
     protected $_platform = 'magento';
 
     const CATALOG_URL = 'catalog/product/';
 
     /**
-     * Runs module
+     * Class constructor
      */
     protected function _construct()
     {
@@ -71,11 +71,10 @@ class Hic_Integration_Model_Data extends Varien_Object
 
         // request item information from product collection catalog
         $collection = Mage::getResourceModel('catalog/product_collection')
-            ->addFieldToFilter('entity_id', array('in' => $productIds ) )
+            ->addFieldToFilter('entity_id', array('in' => $productIds ))
             ->addAttributeToSelect(array('name','description'));
         $count = 0;
 
-        // TODO: Swap Description for ShortDescription
         foreach ($collection as $product) {
             $info = array();
             $info['ds'] = (float)$items[$count]->getDiscountAmount();
@@ -83,7 +82,7 @@ class Hic_Integration_Model_Data extends Varien_Object
             $info['qt'] = (float)$items[$count]->getQty();
             $info['pr'] = (float)$items[$count]->getRowTotalInclTax();
             $info['bpr'] = (float)$items[$count]->getPrice();
-            if ( $this->helper()->isConfirmation()) {
+            if ($this->helper()->isConfirmation()) {
                 $info['qt'] = (float)$items[$count]->getQtyOrdered();
             }
             $info['desc'] = strip_tags($product->getDescription());
@@ -145,7 +144,8 @@ class Hic_Integration_Model_Data extends Varien_Object
             if (Mage::app()->getStore()->getCurrentCurrencyCode()) {
                 $data['cu'] = Mage::app()->getStore()->getCurrentCurrencyCode();
             }
-            $data['li'] = $this->_getCartItems($cartQuote->getAllVisibleItems());
+            $data['li'] = $this
+                ->_getCartItems($cartQuote->getAllVisibleItems());
             $this->setCart($data);
             return $this;
         }
@@ -165,9 +165,9 @@ class Hic_Integration_Model_Data extends Varien_Object
             $data['auth'] = $session->isLoggedIn();
             $data['ht'] = false;
             $data['nv'] = true;
-            $data['cg'] = Mage::getSingleton('customer/session')->getCustomerGroupId();
+            $data['cg'] = Mage::getSingleton('customer/session')
+                ->getCustomerGroupId();
             if ($customer->getId()) {
-                // Determine if customer has transacted or not.  Must be logged in.
                 $orders = Mage::getModel('sales/order')->getCollection();
                 $orders->addAttributeToFilter('customer_id', $customer->getId());
                 if ($orders) {
@@ -185,7 +185,7 @@ class Hic_Integration_Model_Data extends Varien_Object
                 $data['id'] = $customer->getId();
                 $data['nv'] = false;
                 $data['nm'] = trim($customer->getFirstname() . ' ' . $customer->getLastname());
-                $data['since'] = $customer->getCreatedAt(); // yyyy-mm-dd hh:mm:ss+01:00
+                $data['since'] = $customer->getCreatedAt();
             }
             $this->setUser($data);
             return $this;
@@ -230,9 +230,11 @@ class Hic_Integration_Model_Data extends Varien_Object
             if ($order->getDiscountAmount() > 0) {
                 $transaction['ds'] = -1 * $order->getDiscountAmount();
             }
-            $transaction['li'] = $this->_getCartItems($order->getAllVisibleItems());
+            $transaction['li'] = $this
+                ->_getCartItems($order->getAllVisibleItems());
             $transaction['sh'] = (float)$order->getShippingAmount();
-            $transaction['shm'] = $order->getShippingMethod() ? $order->getShippingMethod() : '';
+            $transaction['shm'] = $order->getShippingMethod()
+                ? $order->getShippingMethod() : '';
             $this->setTr($transaction);
             return $this;
         }
@@ -251,7 +253,8 @@ class Hic_Integration_Model_Data extends Varien_Object
             $data['nm']  = $product->getName();
             $data['url'] = $product->getProductUrl();
             $data['sku'] = $product->getSku();
-            $data['img'] = Mage::getBaseUrl('media') . self::CATALOG_URL . $product->getImage();
+            $data['img'] = Mage::getBaseUrl('media')
+                . self::CATALOG_URL . $product->getImage();
             $this->setProduct($data);
             return $this;
         }

@@ -6,7 +6,6 @@
             <sort_order>1000</sort_order>
         </integration>
     </tabs>
-
     <sections>
         <integration translate="label">
             <label>Settings</label>
@@ -16,7 +15,6 @@
             <show_in_default>1</show_in_default>
             <show_in_website>1</show_in_website>
             <show_in_store>1</show_in_store>
-
             <groups>
                 <settings translate="label">
                     <label>Configuration</label>

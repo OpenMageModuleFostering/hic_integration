@@ -25,16 +25,35 @@
  * @package Integration
  * @author HiConversion <support@hiconversion.com>
  */
-class Hic_Integration_Model_Container_Cache extends Enterprise_PageCache_Model_Container_Abstract
+class Hic_Integration_Model_Container_Cache
+    extends Enterprise_PageCache_Model_Container_Abstract
 {
+    const CACHE_TAG_PREFIX = 'HICONVERSION_INTEGRATION_';
+
     /**
-     * Get container individual cache id
+     * Get identifier from cookies
+     *
+     * @return string
+     */
+    public static function getCacheId()
+    {
+        $cookieCart = Enterprise_PageCache_Model_Cookie::COOKIE_CART;
+        $cookieCustomer = Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER;
+        return md5(Hic_Integration_Model_Container_Cache::CACHE_TAG_PREFIX
+            . (array_key_exists($cookieCart, $_COOKIE)
+                ? $_COOKIE[$cookieCart] : '')
+            . (array_key_exists($cookieCustomer, $_COOKIE)
+                ? $_COOKIE[$cookieCustomer] : ''));
+    }
+
+    /**
+     * Returns Cache ID
      *
      * @return string
      */
     protected function _getCacheId()
     {
-        return 'HICONVERSION' . md5($this->_placeholder->getAttribute('cache_id')) . '_' . $this->_getCookieValue(Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER, '');
+        return Hic_Integration_Model_Container_Cache::getCacheId();
     }
 
     /**
@@ -49,19 +68,5 @@ class Hic_Integration_Model_Container_Cache extends Enterprise_PageCache_Model_C
         $block = new $blockClass;
         $block->setTemplate($template);
         return $block->toHtml();
-    }
-
-    /**
-     * Save cache
-     *
-     * @param string $data
-     * @param string $id
-     * @param array $tags
-     * @param null $lifetime
-     * @return bool
-     */
-    protected function _saveCache($data, $id, $tags = array(), $lifetime = null)
-    {
-        return false;
     }
 }

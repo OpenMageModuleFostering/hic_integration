@@ -30,7 +30,7 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     const SETTINGS_ENABLED   = 'integration/settings/enabled';
     const SETTINGS_ENABLED_2 = 'integration/settings/enabled_2';
     const SETTINGS_SITE_ID   = 'integration/settings/site_id';
-    const EXTENSION_VERSION  = '1.1.0';
+    const EXTENSION_VERSION  = '1.1.1';
 
     /**
      * Returns Site ID from Configuration
@@ -70,7 +70,18 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     public function hicData()
     {
         $model = Mage::getModel('integration/data');
-        $data = $model->toArray(array('page', 'cart', 'user','tr','version','platform','pid','product'));
+        $data = $model
+            ->toArray(
+                array(
+                'page',
+                'cart',
+                'user',
+                'tr',
+                'version',
+                'platform',
+                'pid',
+                'product')
+            );
         $data = array_filter($data);
         $obj = new Varien_Object($data);
         if ($obj && $data) {
@@ -85,7 +96,10 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function getRoute()
     {
-        $route = Mage::app()->getFrontController()->getAction()->getFullActionName();
+        $route = Mage::app()
+            ->getFrontController()
+            ->getAction()
+            ->getFullActionName();
         return $route;
     }
 
@@ -117,6 +131,7 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     public function isConfirmation()
     {
         $request = Mage::app()->getRequest();
-        return false !== strpos($request->getRouteName(), 'checkout') && 'success' == $request->getActionName();
+        return false !== strpos($request->getRouteName(), 'checkout')
+            && 'success' == $request->getActionName();
     }
 }
