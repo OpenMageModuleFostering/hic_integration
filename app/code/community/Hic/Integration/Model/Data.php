@@ -35,6 +35,28 @@ class Hic_Integration_Model_Data extends Varien_Object
     protected function _construct()
     {
     }
+    
+    
+    /**
+     * Returns category names for each product
+     * passed into function
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @return array $categoryNames
+     */
+    protected function _getCategoryNames($product)
+    {
+        $catIds =  $product->getCategoryIds();
+        $catCollection = Mage::getResourceModel('catalog/category_collection')
+            ->addAttributeToFilter('entity_id', $catIds)
+            ->addAttributeToSelect('name')
+            ->addIsActiveFilter();
+        $categoryNames = array();
+        foreach ($catCollection as $category) {
+            $categoryNames[] = $category->getName();
+        }
+        return $categoryNames;
+    }
 
     /**
      * Returns product information for each product
@@ -57,7 +79,7 @@ class Hic_Integration_Model_Data extends Varien_Object
         // request item information from product collection catalog
         $collection = Mage::getResourceModel('catalog/product_collection')
             ->addFieldToFilter('entity_id', array('in' => $productIds ))
-            ->addAttributeToSelect(array('name','description'));
+            ->addAttributeToSelect(array('name','description','sku'));
         $count = 0;
 
         foreach ($collection as $product) {
@@ -77,7 +99,7 @@ class Hic_Integration_Model_Data extends Varien_Object
             $info['nm'] = $product->getName();
             $info['img'] = $product->getImageUrl();
             $info['sku'] = $product->getSku();
-            $info['cat'] = $product->getCategoryIds();
+            $info['cat'] = $this->_getCategoryNames($product);
             $data[] = $info;
             $count = $count + 1;
         }
@@ -273,11 +295,12 @@ class Hic_Integration_Model_Data extends Varien_Object
     {
         // registry does not exist when we are cached
         if ($product = Mage::registry('current_product')) {
-            $data['cat'] = $product->getCategoryIds();
+            $data['cat'] = $this->_getCategoryNames($product);
             $data['id']  = $product->getId();
             $data['nm']  = $product->getName();
             $data['url'] = $product->getProductUrl();
             $data['sku'] = $product->getSku();
+            $data['bpr'] = $product->getPrice();
             $data['img'] = Mage::getBaseUrl('media')
                 . self::CATALOG_URL . $product->getImage();
             $this->setProduct($data);
