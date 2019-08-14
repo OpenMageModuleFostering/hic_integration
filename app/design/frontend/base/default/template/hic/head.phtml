@@ -1,0 +1,48 @@
+<?php
+$helper = $this->helper('integration');
+$hic_data = $helper->getHicData();
+?>
+<?php if($helper->isEnabled()):?>
+
+    <script>
+        try {
+            var script = document.createElement("script");
+            script.id = "hiconversion_30";
+            script.async = "async";
+            script.type = "text/javascript";
+            script.src = "//h30-deploy.hiconversion.com/origin/tag/<?php echo $helper->getSiteId(); ?>";
+            var nodes = document.getElementsByTagName("script");
+            if (nodes.length > 0) {
+                nodes[0].parentNode.insertBefore(script, nodes[0]);
+            }
+        } catch (e) {
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        var __hic = __hic || {};
+        __hic.version = "1.0.0";
+        __hic.data = <?php echo $hic_data->hicData() ?>;
+    </script>
+
+    <?php if ($helper->isEnabled2()) : ?>
+        <script id="hiconversion_head_script" type="text/javascript">
+                var hiconversion_load = new Date();
+                function hiconversion_head_load() {
+                    var external ="";
+                    var script = document.createElement("script");
+                    script.id = "hiconversion_head_include";
+                    script.async = "async";
+                    script.type = "text/javascript";
+                    script.src = (document.location.protocol == "https:" ? "https://ssl" : "http://update") + ".hiconversion.com/app/update?async=true&external=" + external + "&version=2.0";
+                    var nodes = document.getElementsByTagName("script");
+                    if (nodes.length > 0) {
+                        nodes[0].parentNode.insertBefore(script, nodes[0]);
+                    }
+                }
+                hiconversion_head_load();
+        </script>
+
+    <?php endif;?>
+<?php endif; ?>

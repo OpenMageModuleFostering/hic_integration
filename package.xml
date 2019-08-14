@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+    <name>Hic_Integration</name>
+    <version>1.0.0</version>
+    <stability>stable</stability>
+    <license>MIT</license>
+    <channel>community</channel>
+    <extends/>
+    <summary>This is the official all-in-one HiConversion - Magento connector that enables the use of all web analytics, testing, targeting, personalization, and customer experience optimization capabilities of the HiConversion product suite. This one-time integration will save you from custom tagging and the other implementation pains associated with traditional web analytics, testing, and optimization solutions.</summary>
+    <description>Once live, the extension will provide total data capture and the client-side page modification capabilities needed for running of live adaptive customer experience optimization campaigns. These include:&#xD;
+&#xD;
+Data Capture: We productized our knowledge about the types of data collected by the most advanced web analytics solutions deployed on the Magento stores. We then created an extension that provides a solid data collection right out-of-the-box. There is no need for any additional custom tagging of your site. All other custom events and metric tracking is provisioned through our application interface. &#xD;
+&#xD;
+Optimization: The second role for the extension is to enable client-side testing, targeting, personalization, and customer experience optimization. To minimize technical complexity and IT dependency, we provide a visual designer tool that will enable you to visually provision your optimization campaigns. The visual designs are then translated into lines of code that are then transparently executed by the visitor browser during the web page rendering process.</description>
+    <notes>Initial Stable Release</notes>
+    <authors><author><name>HiConversion</name><user>hiconversion</user><email>dhenrickson@hiconversion.com</email></author></authors>
+    <date>2015-04-21</date>
+    <time>15:49:47</time>
+    <contents><target name="magecommunity"><dir name="Hic"><dir name="Integration"><dir name="Block"><dir name="Html"><file name="Head.php" hash="6b9949c419ce6a98ddc2437d55749914"/></dir><file name="Template.php" hash="aa50189e5d9c57017c5f85fe3140a3cd"/></dir><dir name="Helper"><file name="Data.php" hash="47c1b873a75ef4efb3f1491de5cf1682"/></dir><dir name="Model"><dir name="Container"><file name="Template.php" hash="916c3b28e359054e9e0f3019576b6098"/></dir><file name="Data.php" hash="99c327f2e058e662787fc7a7c48abe2b"/></dir><dir name="etc"><file name="adminhtml.xml" hash="f122c26dfe576f4c09f83abe76424931"/><file name="cache.xml" hash="b67ce021de2a64b796e3ba88e84df601"/><file name="config.xml" hash="b192a565cec62d2eadcac18657515962"/><file name="system.xml" hash="62129b4db99b2ffcc698c68f89712ad1"/></dir></dir></dir></target><target name="mageetc"><dir name="modules"><file name="Hic_Integration.xml" hash="94fd9568fa202ad3d4773331e46d88c2"/></dir></target><target name="magedesign"><dir name="frontend"><dir name="base"><dir name="default"><dir name="layout"><dir name="hic"><file name="hiconversion.xml" hash="01b3d087e71e592a5dadb8ac0ad7c822"/></dir></dir><dir name="template"><dir name="hic"><file name="body.phtml" hash="ca0b99af17fe0f844db8c2fa265ff32f"/><file name="head.phtml" hash="28dbb72df9adce978a552623e74b2bea"/></dir></dir></dir></dir></dir></target></contents>
+    <compatible/>
+    <dependencies><required><php><min>5.4.0</min><max>5.6.7</max></php></required></dependencies>
+</package>

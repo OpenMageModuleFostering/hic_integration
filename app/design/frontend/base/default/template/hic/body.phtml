@@ -1,0 +1,22 @@
+<?php
+$helper = $this->helper('integration');
+?>
+<?php if ($helper->isEnabled() && $helper->isEnabled2()) : ?>
+
+    <script id="hiconversion_body_script" type="text/javascript">
+        function hiconversion_body_run(arg) {
+            var then = new Date();
+            var diff = then - arg.ran;
+            if (diff < arg.wait) {
+                if (typeof hiconversion_body_update == "function") {
+                    hiconversion_body_update({async: true, pass: arg.pass, ran: arg.ran, then: then });
+                } else {
+                    arg.pass = arg.pass + 1;
+                    setTimeout(function() { hiconversion_body_run(arg); }, 100);
+                }
+            }
+        }
+        hiconversion_body_run({ async: true, pass: 0, ran: new Date(), wait: 30000 });
+    </script>
+
+<?php endif; ?>

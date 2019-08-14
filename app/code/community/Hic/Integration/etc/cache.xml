@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config>
+    <placeholders>
+        <hiconversion>
+            <block>integration/template</block>
+            <placeholder>HICONVERSION</placeholder>
+            <container>Hic_Integration_Model_Container_Template</container>
+            <cache_lifetime>86400</cache_lifetime>
+        </hiconversion>
+    </placeholders>
+</config>

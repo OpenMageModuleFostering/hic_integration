@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Hic_Integration",
+    "type": "magento-module",
+    "license": "MIT",
+    "homepage": "",
+    "description": "This is the official all-in-one HiConversion - Magento connector that enables the use of all web analytics, testing, targeting, personalization, and customer experience optimization capabilities of the HiConversion product suite. This one-time integration will save you from custom tagging and the other implementation pains associated with traditional web analytics, testing, and optimization solutions.",
+    "authors": [
+    {
+        "name": "HiConversion",
+        "email": "dhenrickson@hiconversion.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}
