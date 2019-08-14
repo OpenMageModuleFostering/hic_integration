@@ -27,29 +27,38 @@
  */
 class Hic_Integration_Model_Data extends Varien_Object
 {
-    protected $_version = '1.1';
-    protected $_platform = 'magento';
-
     const CATALOG_URL = 'catalog/product/';
-
+    
     /**
      * Class constructor
      */
     protected function _construct()
     {
-        $this
-            ->setVersion($this->_version)
-            ->setPlatform($this->_platform)
-            ->setPid($this->helper()->getSiteId())
-            ->_initPage()
-            ->_initUser()
-            ->_initCart();
-        if ($this->helper()->isProduct()) {
-            $this->_initProduct();
+    }
+    
+    
+    /**
+     * Returns category names for each product
+     * passed into function
+     *
+     * @param Mage_Catalog_Model_Product $product
+     * @return array $categoryNames
+     */
+    protected function _getCategoryNames($product)
+    {
+        $catIds =  $product->getCategoryIds();
+        if (empty($catIds)) {
+            return null;
         }
-        if ($this->helper()->isConfirmation()) {
-            $this->_initOrder();
+        $catCollection = Mage::getResourceModel('catalog/category_collection')
+            ->addAttributeToFilter('entity_id', $catIds)
+            ->addAttributeToSelect('name')
+            ->addIsActiveFilter();
+        $categoryNames = array();
+        foreach ($catCollection as $category) {
+            $categoryNames[] = $category->getName();
         }
+        return $categoryNames;
     }
 
     /**
@@ -57,9 +66,10 @@ class Hic_Integration_Model_Data extends Varien_Object
      * passed into function
      *
      * @param array $items
+     * @params boolean $isOrder
      * @return array $data
      */
-    protected function _getCartItems($items)
+    protected function _getCartItems($items, $isOrder)
     {
         $data = array();
 
@@ -72,46 +82,86 @@ class Hic_Integration_Model_Data extends Varien_Object
         // request item information from product collection catalog
         $collection = Mage::getResourceModel('catalog/product_collection')
             ->addFieldToFilter('entity_id', array('in' => $productIds ))
-            ->addAttributeToSelect(array('name','description'));
-        $count = 0;
-
+            ->addAttributeToSelect(array('name','description','sku','image'));
+            
         foreach ($collection as $product) {
+            // return order for collection is not always the same as the order of the input product ids
+            $index = array_search($product->getId(), $productIds);
             $info = array();
-            $info['ds'] = (float)$items[$count]->getDiscountAmount();
-            $info['tx'] = (float)$items[$count]->getTaxAmount();
-            $info['qt'] = (float)$items[$count]->getQty();
-            $info['pr'] = (float)$items[$count]->getRowTotalInclTax();
-            $info['bpr'] = (float)$items[$count]->getPrice();
-            if ($this->helper()->isConfirmation()) {
-                $info['qt'] = (float)$items[$count]->getQtyOrdered();
+            $info['ds'] = (float)$items[$index]->getDiscountAmount();
+            $info['tx'] = (float)$items[$index]->getTaxAmount();
+            $info['pr'] = (float)$items[$index]->getRowTotalInclTax();
+            $info['bpr'] = (float)$items[$index]->getPrice();
+            if ($isOrder) {
+                $info['qt'] = (float)$items[$index]->getQtyOrdered();
+            } else {
+                $info['qt'] = (float)$items[$index]->getQty();
             }
             $info['desc'] = strip_tags($product->getDescription());
             $info['id'] = $product->getId();
             $info['url'] = $product->getProductUrl();
             $info['nm'] = $product->getName();
-            $info['img'] = $product->getImageUrl();
+            $info['img'] = Mage::getBaseUrl('media')
+              . self::CATALOG_URL . $product->getImage();
             $info['sku'] = $product->getSku();
-            $info['cat'] = $product->getCategoryIds();
+            $info['cat'] = $this->_getCategoryNames($product);
             $data[] = $info;
-            $count = $count + 1;
         }
         return $data;
     }
+    
+    /**
+     * Determines and returns page route
+     *
+     * @return string
+     */
+    protected function _getRoute()
+    {
+        return Mage::app()
+            ->getFrontController()
+            ->getAction()
+            ->getFullActionName();
+    }
+    
+    /**
+     * Determines if its a product page or not
+     *
+     * @return boolean
+     */
+    public function isProduct()
+    {
+        return 'catalog_product_view' == $this->_getRoute();
+    }
 
     /**
-     * Returns page route and breadcrumb info
+     * Determines if Confirmation page or not
+     *
+     * @return boolean
+     */
+    public function isConfirmation()
+    {
+        $request = Mage::app()->getRequest();
+        return false !== strpos($request->getRouteName(), 'checkout')
+            && 'success' == $request->getActionName();
+    }
+
+    /**
+     * Retrieves page route and breadcrumb info and populates page
+     * attribute
      *
      * @return array $this
      */
-    protected function _initPage()
+    public function populatePageData()
     {
         $crumb = array();
         foreach (Mage::helper('catalog')->getBreadcrumbPath() as $item) {
+            
             $crumb[] = $item['label'];
         }
+        
         $this->setPage(
             array(
-                'route' => $this->helper()->getRoute(),
+                'route' => $this->_getRoute(),
                 'bc' => $crumb
             )
         );
@@ -119,11 +169,11 @@ class Hic_Integration_Model_Data extends Varien_Object
     }
 
     /**
-     * Returns cart information
+     * Retrieves cart information and populates cart attribute
      *
      * @return array $this
      */
-    protected function _initCart()
+    public function populateCartData()
     {
         $cart = Mage::getModel('checkout/cart');
         $cartQuote = $cart->getQuote();
@@ -139,24 +189,24 @@ class Hic_Integration_Model_Data extends Varien_Object
                 $data['tt'] = (float)$cartQuote->getGrandTotal();
             }
             if ($cartQuote->getItemsCount()) {
-                $data['qt'] = (float)$cartQuote->getItemsCount();
+                $data['qt'] = (float)$cartQuote->getItemsQty();
             }
             if (Mage::app()->getStore()->getCurrentCurrencyCode()) {
                 $data['cu'] = Mage::app()->getStore()->getCurrentCurrencyCode();
             }
             $data['li'] = $this
-                ->_getCartItems($cartQuote->getAllVisibleItems());
+                ->_getCartItems($cartQuote->getAllVisibleItems(), false);
             $this->setCart($data);
-            return $this;
         }
+        return $this;
     }
 
     /**
-     * Returns user information
+     * Retrieves user information and populates user attribute
      *
      * @return array $this
      */
-    protected function _initUser()
+    public function populateUserData()
     {
         $session = Mage::helper('customer');
         $customer = $session->getCustomer();
@@ -188,16 +238,16 @@ class Hic_Integration_Model_Data extends Varien_Object
                 $data['since'] = $customer->getCreatedAt();
             }
             $this->setUser($data);
-            return $this;
         }
+        return $this;
     }
 
     /**
-     * Returns transaction information
+     * Retrieves order information and populates tr attribute
      *
      * @return array $this
      */
-    protected function _initOrder()
+    public function populateOrderData()
     {
         $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
         if (!$orderId) {
@@ -224,49 +274,48 @@ class Hic_Integration_Model_Data extends Varien_Object
             if ($order->getGrandTotal()) {
                 $transaction['tt'] = (float)$order->getGrandTotal();
             }
+            if ($order->getTotalQtyOrdered()) {
+                $transaction['qt'] = (float)$order->getTotalQtyOrdered();
+            }
             if ($order->getCouponCode()) {
                 $transaction['coup'] = array($order->getCouponCode());
             }
-            if ($order->getDiscountAmount() > 0) {
-                $transaction['ds'] = -1 * $order->getDiscountAmount();
+            if ($order->getDiscountAmount()) {
+                $transaction['ds'] = abs((float)$order->getDiscountAmount());
             }
             $transaction['li'] = $this
-                ->_getCartItems($order->getAllVisibleItems());
+                ->_getCartItems($order->getAllVisibleItems(), true);
             $transaction['sh'] = (float)$order->getShippingAmount();
             $transaction['shm'] = $order->getShippingMethod()
                 ? $order->getShippingMethod() : '';
             $this->setTr($transaction);
-            return $this;
         }
+        return $this;
     }
 
     /**
-     * Returns product information
+     * Retrieves product information and populates product attribute
      *
      * @return array $this
      */
-    protected function _initProduct()
+    public function populateProductData()
     {
+        // registry does not exist when we are cached
         if ($product = Mage::registry('current_product')) {
-            $data['cat'] = $product->getCategoryIds();
+            $data['cat'] = $this->_getCategoryNames($product);
             $data['id']  = $product->getId();
             $data['nm']  = $product->getName();
+            $data['desc'] = strip_tags($product->getDescription());
             $data['url'] = $product->getProductUrl();
             $data['sku'] = $product->getSku();
+            $data['bpr'] = (float)$product->getPrice();
             $data['img'] = Mage::getBaseUrl('media')
                 . self::CATALOG_URL . $product->getImage();
             $this->setProduct($data);
-            return $this;
         }
+        return $this;       
     }
+    
+    
 
-    /**
-     * Helper reference
-     *
-     * @return Mage_Core_Helper_Abstract
-     */
-    protected function helper()
-    {
-        return Mage::helper('integration');
-    }
 }

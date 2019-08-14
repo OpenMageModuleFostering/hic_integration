@@ -19,34 +19,15 @@
  */
 
 /**
- * Integration container to hole-punch
+ * Integration container which should never cache 
  *
  * @category Hic
  * @package Integration
  * @author HiConversion <support@hiconversion.com>
  */
-class Hic_Integration_Model_Container_Cache
+class Hic_Integration_Model_Container_Never
     extends Enterprise_PageCache_Model_Container_Abstract
 {
-    const CACHE_TAG_PREFIX = 'HICONVERSION_INTEGRATION_';
-
-    /**
-     * Get identifier from cookies
-     *
-     * @return string
-     */
-    public static function getCacheId()
-    {
-        $cookieCart = Enterprise_PageCache_Model_Cookie::COOKIE_CART;
-        $cookieCustomer = Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER;
-        return md5(
-            Hic_Integration_Model_Container_Cache::CACHE_TAG_PREFIX
-            . (array_key_exists($cookieCart, $_COOKIE)
-                ? $_COOKIE[$cookieCart] : '')
-            . (array_key_exists($cookieCustomer, $_COOKIE)
-                ? $_COOKIE[$cookieCustomer] : '')
-        );
-    }
 
     /**
      * Returns Cache ID
@@ -55,7 +36,7 @@ class Hic_Integration_Model_Container_Cache
      */
     protected function _getCacheId()
     {
-        return Hic_Integration_Model_Container_Cache::getCacheId();
+        return $this->_placeholder->getAttribute('cache_id');
     }
 
     /**
@@ -70,5 +51,17 @@ class Hic_Integration_Model_Container_Cache
         $block = new $blockClass;
         $block->setTemplate($template);
         return $block->toHtml();
+    }
+    
+    /**
+     * @param string $data
+     * @param string $id
+     * @param array $tags
+     * @param null $lifetime
+     * @return bool|Enterprise_PageCache_Model_Container_Abstract
+     */
+    protected function _saveCache($data, $id, $tags = array(), $lifetime = null)
+    {
+        return false;
     }
 }

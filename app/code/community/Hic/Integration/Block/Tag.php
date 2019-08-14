@@ -28,4 +28,23 @@
 class Hic_Integration_Block_Tag extends Mage_Core_Block_Template
 {
 
+    /**
+     * add product and category ids to placeholder 
+     *
+     * @return array
+     */
+    public function getCacheKeyInfo()
+    {
+        $info = parent::getCacheKeyInfo();
+        if (Mage::registry('current_product'))
+        {
+            $info['product_id'] = Mage::registry('current_product')->getId();
+        }
+        if (Mage::registry('current_category'))
+        {
+            $info['category_id'] = Mage::registry('current_category')->getId();
+        }
+        return $info;
+    }
+
 }

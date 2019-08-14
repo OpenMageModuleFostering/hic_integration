@@ -27,8 +27,7 @@
  */
 class Hic_Integration_Model_Observer
 {
-    protected static $_isHead = false;
-    protected static $_isRendered = false;
+    
     protected static $_clearCache = false;
 
     /**
@@ -57,21 +56,7 @@ class Hic_Integration_Model_Observer
     }
 
     /**
-     * Check 'controller_action_layout_render_before' event response
-     * type to determine if it is a HTML page response
-     *
-     * @return $this
-     */
-    public function checkResponseType()
-    {
-        if (Mage::app()->getLayout()->getBlock('head')) {
-            self::$_isHead = true;
-        }
-        return $this;
-    }
-
-    /**
-     * Intercept 'controller_action_postdispatch' event response
+     * Intercept 'core_block_abstract_tohtml_after' event response
      * to inject block at top of head
      *
      * @param Varien_Event_Observer $observer
@@ -79,39 +64,46 @@ class Hic_Integration_Model_Observer
      */
     public function interceptResponse(Varien_Event_Observer $observer)
     {
-        if (self::$_isHead && !self::$_isRendered) {
+        if ($observer->getBlock()->getNameInLayout() == 'head') {
+            $html = $observer->getTransport()->getHtml();
             $layout = Mage::getSingleton('core/layout');
-            $tag = $layout
-                ->createBlock('integration/tag', 'hic.integration.tag')
-                ->setTemplate('hic/head.phtml')
+            $tagSession = $layout
+                ->createBlock('integration/tag', 'hic.integration.tag.session')
+                ->setTemplate('hic/headSession.phtml')
                 ->toHtml();
-            $response = $observer->getEvent()
-                ->getControllerAction()
-                ->getResponse();
-            $openHeadTag = '<head>';
-            $pos = strpos($response, $openHeadTag);
-            if ($pos !== false && $layout && $tag && $response) {
-                $newStr = substr_replace($response, $tag, $pos + strlen($openHeadTag), 0);
-                $response->setBody($newStr);
-                self::$_isRendered = true;
-            }
+            $tagPage = $layout
+                ->createBlock('integration/tag', 'hic.integration.tag.page')
+                ->setTemplate('hic/headPage.phtml')
+                ->toHtml();
+            $tagNever = $layout
+                ->createBlock('integration/tag', 'hic.integration.tag.never')
+                ->setTemplate('hic/headNever.phtml')
+                ->toHtml();
+            $tagAlways = $layout
+                ->createBlock('integration/tag', 'hic.integration.tag')
+                ->setTemplate('hic/headAlways.phtml')
+                ->toHtml();
+           
+            $observer->getTransport()->setHtml($tagSession . $tagPage . $tagNever . $tagAlways . $html);
         }
+        
         return $this;
     }
 
 
     /**
-     * Clear placeholder cache for
+     * Clear placeholder cache for Session Container
      *
      * @return $this
      */
     public function flushCache()
     {
+       
         if (!$this->isCacheEnabled()) {
             return $this;
         }
         if (self::$_clearCache == false) {
-            $cacheId = Hic_Integration_Model_Container_Cache::getCacheId();
+            $cacheId = Hic_Integration_Model_Container_Session::getCacheId();
             Enterprise_PageCache_Model_Cache::getCacheInstance()
                 ->remove($cacheId);
             self::$_clearCache = true;

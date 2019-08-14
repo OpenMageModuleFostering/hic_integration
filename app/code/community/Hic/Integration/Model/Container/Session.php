@@ -14,18 +14,18 @@
  *
  * @category Hic
  * @package Hic_Integration
- * @Copyright Â© 2015 HiConversion, Inc. All rights reserved.
+ * @Copyright © 2015 HiConversion, Inc. All rights reserved.
  * @license [http://opensource.org/licenses/MIT] MIT License
  */
 
 /**
- * Integration container to hole-punch
+ * Integration container which should cache as long as cart and customer data hasn't changed
  *
  * @category Hic
  * @package Integration
  * @author HiConversion <support@hiconversion.com>
  */
-class Hic_Integration_Model_Container_Cache
+class Hic_Integration_Model_Container_Session
     extends Enterprise_PageCache_Model_Container_Abstract
 {
     const CACHE_TAG_PREFIX = 'HICONVERSION_INTEGRATION_';
@@ -39,14 +39,13 @@ class Hic_Integration_Model_Container_Cache
     {
         $cookieCart = Enterprise_PageCache_Model_Cookie::COOKIE_CART;
         $cookieCustomer = Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER;
-        return md5(
-            Hic_Integration_Model_Container_Cache::CACHE_TAG_PREFIX
+        return md5(Hic_Integration_Model_Container_Session::CACHE_TAG_PREFIX
             . (array_key_exists($cookieCart, $_COOKIE)
                 ? $_COOKIE[$cookieCart] : '')
             . (array_key_exists($cookieCustomer, $_COOKIE)
-                ? $_COOKIE[$cookieCustomer] : '')
-        );
+                ? $_COOKIE[$cookieCustomer] : ''));
     }
+    
 
     /**
      * Returns Cache ID
@@ -55,7 +54,7 @@ class Hic_Integration_Model_Container_Cache
      */
     protected function _getCacheId()
     {
-        return Hic_Integration_Model_Container_Cache::getCacheId();
+        return Hic_Integration_Model_Container_Session::getCacheId();
     }
 
     /**

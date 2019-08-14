@@ -14,22 +14,24 @@
  *
  * @category Hic
  * @package Hic_Integration
- * @Copyright Â© 2015 HiConversion, Inc. All rights reserved.
+ * @Copyright © 2015 HiConversion, Inc. All rights reserved.
  * @license [http://opensource.org/licenses/MIT] MIT License
  */
 
 $helper = $this->helper('integration');
-$hic_data = $helper->hicData();
 
 ?>
 <?php if($helper->isEnabled()):?>
 
-<script type="text/javascript">
+<script id="hiconversion_head_always" type="text/javascript">
     var __hic = __hic || {};
     (function(){
         try {
-            __hic.version = "1.1.1";
-            __hic.data =  <?php echo $hic_data; ?>;
+            __hic.version = "1.1.10";
+            __hic.data = __hic.data || {};
+            __hic.data.platform = "magento";
+            __hic.data.pid = "<?php echo $helper->getSiteId(); ?>";
+            
             var script = document.createElement("script");
             script.id = "hiconversion_30";
             script.async = "async";

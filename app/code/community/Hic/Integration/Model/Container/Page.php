@@ -14,49 +14,43 @@
  *
  * @category Hic
  * @package Hic_Integration
- * @Copyright Â© 2015 HiConversion, Inc. All rights reserved.
+ * @Copyright © 2015 HiConversion, Inc. All rights reserved.
  * @license [http://opensource.org/licenses/MIT] MIT License
  */
 
 /**
- * Integration container to hole-punch
+ * Integration container which should cache as long as page hasn't changed
  *
  * @category Hic
  * @package Integration
  * @author HiConversion <support@hiconversion.com>
  */
-class Hic_Integration_Model_Container_Cache
+class Hic_Integration_Model_Container_Page
     extends Enterprise_PageCache_Model_Container_Abstract
 {
     const CACHE_TAG_PREFIX = 'HICONVERSION_INTEGRATION_';
 
     /**
-     * Get identifier from cookies
-     *
-     * @return string
-     */
-    public static function getCacheId()
-    {
-        $cookieCart = Enterprise_PageCache_Model_Cookie::COOKIE_CART;
-        $cookieCustomer = Enterprise_PageCache_Model_Cookie::COOKIE_CUSTOMER;
-        return md5(
-            Hic_Integration_Model_Container_Cache::CACHE_TAG_PREFIX
-            . (array_key_exists($cookieCart, $_COOKIE)
-                ? $_COOKIE[$cookieCart] : '')
-            . (array_key_exists($cookieCustomer, $_COOKIE)
-                ? $_COOKIE[$cookieCustomer] : '')
-        );
-    }
-
-    /**
-     * Returns Cache ID
+     * Get cache identifier
      *
      * @return string
      */
     protected function _getCacheId()
     {
-        return Hic_Integration_Model_Container_Cache::getCacheId();
+        if ($this->_placeholder->getAttribute('category_id') 
+            || $this->_placeholder->getAttribute('product_id')) {
+            $cacheSubKey = '_' . $this->_placeholder->getAttribute('category_id') 
+                . '_' . $this->_placeholder->getAttribute('product_id');
+        } else {
+            $cacheSubKey = $this->_getRequestId();
+        }
+
+        return md5(Hic_Integration_Model_Container_Page::CACHE_TAG_PREFIX 
+            . $cacheSubKey);
     }
+    
+    
+
 
     /**
      * Render block content

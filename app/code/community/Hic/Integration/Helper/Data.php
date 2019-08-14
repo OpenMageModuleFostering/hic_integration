@@ -30,7 +30,6 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     const SETTINGS_ENABLED   = 'integration/settings/enabled';
     const SETTINGS_ENABLED_2 = 'integration/settings/enabled_2';
     const SETTINGS_SITE_ID   = 'integration/settings/site_id';
-    const EXTENSION_VERSION  = '1.1.1';
 
     /**
      * Returns Site ID from Configuration
@@ -63,75 +62,51 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
-     * Returns Data model
-     *
+     * Returns Data that can be cached relative to a session
+     * currently cart and user data
      * @return object
      */
-    public function hicData()
+    public function hicSessionData()
+    {
+        $model = Mage::getModel('integration/data')
+            ->populateCartData()
+            ->populateUserData();
+            
+        return $model;
+    }
+    
+    /**
+     * Returns Data that can be cached relative to a page
+     * currently page and product data
+     * @return object
+     */
+    public function hicPageData()
+    {
+        $model = Mage::getModel('integration/data')
+            ->populatePageData();
+        
+        if ($model->isProduct()) {
+            $model->populateProductData();
+        }
+            
+        return $model;
+    }
+    
+    /**
+     * Returns Data that should never be cached
+     * currently order data
+     * @return object
+     */
+    public function hicNeverData()
     {
         $model = Mage::getModel('integration/data');
-        $data = $model
-            ->toArray(
-                array(
-                'page',
-                'cart',
-                'user',
-                'tr',
-                'version',
-                'platform',
-                'pid',
-                'product')
-            );
-        $data = array_filter($data);
-        $obj = new Varien_Object($data);
-        if ($obj && $data) {
-            return Zend_Json::encode($obj->getData());
+     
+        if ($model->isConfirmation()) {
+            $model->populateOrderData();
         }
+        
+        return $model;
     }
 
-    /**
-     * Determines and returns page route
-     *
-     * @return string
-     */
-    public function getRoute()
-    {
-        $route = Mage::app()
-            ->getFrontController()
-            ->getAction()
-            ->getFullActionName();
-        return $route;
-    }
 
-    /**
-     * Return extension version
-     *
-     * @return string
-     */
-    public function getVersion()
-    {
-        return self::EXTENSION_VERSION;
-    }
-
-    /**
-     * Determines if its a product page or not
-     *
-     * @return boolean
-     */
-    public function isProduct()
-    {
-        return 'catalog_product_view' == $this->getRoute();
-    }
-
-    /**
-     * Determines if Confirmation page or not
-     *
-     * @return boolean
-     */
-    public function isConfirmation()
-    {
-        $request = Mage::app()->getRequest();
-        return false !== strpos($request->getRouteName(), 'checkout')
-            && 'success' == $request->getActionName();
-    }
 }
