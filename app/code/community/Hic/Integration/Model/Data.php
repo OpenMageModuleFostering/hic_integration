@@ -82,7 +82,7 @@ class Hic_Integration_Model_Data extends Varien_Object
         // request item information from product collection catalog
         $collection = Mage::getResourceModel('catalog/product_collection')
             ->addFieldToFilter('entity_id', array('in' => $productIds ))
-            ->addAttributeToSelect(array('name','description','sku'));
+            ->addAttributeToSelect(array('name','description','sku','image'));
         $count = 0;
 
         foreach ($collection as $product) {
@@ -100,7 +100,8 @@ class Hic_Integration_Model_Data extends Varien_Object
             $info['id'] = $product->getId();
             $info['url'] = $product->getProductUrl();
             $info['nm'] = $product->getName();
-            $info['img'] = $product->getImageUrl();
+            $info['img'] = Mage::getBaseUrl('media')
+              . self::CATALOG_URL . $product->getImage();
             $info['sku'] = $product->getSku();
             $info['cat'] = $this->_getCategoryNames($product);
             $data[] = $info;
@@ -304,9 +305,10 @@ class Hic_Integration_Model_Data extends Varien_Object
             $data['cat'] = $this->_getCategoryNames($product);
             $data['id']  = $product->getId();
             $data['nm']  = $product->getName();
+            $data['desc'] = strip_tags($product->getDescription());
             $data['url'] = $product->getProductUrl();
             $data['sku'] = $product->getSku();
-            $data['bpr'] = $product->getPrice();
+            $data['bpr'] = (float)$product->getPrice();
             $data['img'] = Mage::getBaseUrl('media')
                 . self::CATALOG_URL . $product->getImage();
             $this->setProduct($data);
