@@ -47,6 +47,9 @@ class Hic_Integration_Model_Data extends Varien_Object
     protected function _getCategoryNames($product)
     {
         $catIds =  $product->getCategoryIds();
+        if (empty($catIds)) {
+            return null;
+        }
         $catCollection = Mage::getResourceModel('catalog/category_collection')
             ->addAttributeToFilter('entity_id', $catIds)
             ->addAttributeToSelect('name')
