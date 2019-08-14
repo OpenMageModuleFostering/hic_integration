@@ -35,31 +35,6 @@ class Hic_Integration_Model_Data extends Varien_Object
     protected function _construct()
     {
     }
-    
-    
-    /**
-     * Returns category names for each product
-     * passed into function
-     *
-     * @param Mage_Catalog_Model_Product $product
-     * @return array $categoryNames
-     */
-    protected function _getCategoryNames($product)
-    {
-        $catIds =  $product->getCategoryIds();
-        if (empty($catIds)) {
-            return null;
-        }
-        $catCollection = Mage::getResourceModel('catalog/category_collection')
-            ->addAttributeToFilter('entity_id', $catIds)
-            ->addAttributeToSelect('name')
-            ->addIsActiveFilter();
-        $categoryNames = array();
-        foreach ($catCollection as $category) {
-            $categoryNames[] = $category->getName();
-        }
-        return $categoryNames;
-    }
 
     /**
      * Returns product information for each product
@@ -82,30 +57,29 @@ class Hic_Integration_Model_Data extends Varien_Object
         // request item information from product collection catalog
         $collection = Mage::getResourceModel('catalog/product_collection')
             ->addFieldToFilter('entity_id', array('in' => $productIds ))
-            ->addAttributeToSelect(array('name','description','sku','image'));
-            
+            ->addAttributeToSelect(array('name','description'));
+        $count = 0;
+
         foreach ($collection as $product) {
-            // return order for collection is not always the same as the order of the input product ids
-            $index = array_search($product->getId(), $productIds);
             $info = array();
-            $info['ds'] = (float)$items[$index]->getDiscountAmount();
-            $info['tx'] = (float)$items[$index]->getTaxAmount();
-            $info['pr'] = (float)$items[$index]->getRowTotalInclTax();
-            $info['bpr'] = (float)$items[$index]->getPrice();
+            $info['ds'] = (float)$items[$count]->getDiscountAmount();
+            $info['tx'] = (float)$items[$count]->getTaxAmount();
+            $info['pr'] = (float)$items[$count]->getRowTotalInclTax();
+            $info['bpr'] = (float)$items[$count]->getPrice();
             if ($isOrder) {
-                $info['qt'] = (float)$items[$index]->getQtyOrdered();
+                $info['qt'] = (float)$items[$count]->getQtyOrdered();
             } else {
-                $info['qt'] = (float)$items[$index]->getQty();
+                $info['qt'] = (float)$items[$count]->getQty();
             }
             $info['desc'] = strip_tags($product->getDescription());
             $info['id'] = $product->getId();
             $info['url'] = $product->getProductUrl();
             $info['nm'] = $product->getName();
-            $info['img'] = Mage::getBaseUrl('media')
-              . self::CATALOG_URL . $product->getImage();
+            $info['img'] = $product->getImageUrl();
             $info['sku'] = $product->getSku();
-            $info['cat'] = $this->_getCategoryNames($product);
+            $info['cat'] = $product->getCategoryIds();
             $data[] = $info;
+            $count = $count + 1;
         }
         return $data;
     }
@@ -274,17 +248,14 @@ class Hic_Integration_Model_Data extends Varien_Object
             if ($order->getGrandTotal()) {
                 $transaction['tt'] = (float)$order->getGrandTotal();
             }
-            if ($order->getTotalQtyOrdered()) {
-                $transaction['qt'] = (float)$order->getTotalQtyOrdered();
-            }
             if ($order->getCouponCode()) {
                 $transaction['coup'] = array($order->getCouponCode());
             }
-            if ($order->getDiscountAmount()) {
-                $transaction['ds'] = abs((float)$order->getDiscountAmount());
+            if ($order->getDiscountAmount() > 0) {
+                $transaction['ds'] = -1 * $order->getDiscountAmount();
             }
             $transaction['li'] = $this
-                ->_getCartItems($order->getAllVisibleItems(), true);
+                ->_getCartItems($order->getAllVisibleItems(), false);
             $transaction['sh'] = (float)$order->getShippingAmount();
             $transaction['shm'] = $order->getShippingMethod()
                 ? $order->getShippingMethod() : '';
@@ -302,13 +273,11 @@ class Hic_Integration_Model_Data extends Varien_Object
     {
         // registry does not exist when we are cached
         if ($product = Mage::registry('current_product')) {
-            $data['cat'] = $this->_getCategoryNames($product);
+            $data['cat'] = $product->getCategoryIds();
             $data['id']  = $product->getId();
             $data['nm']  = $product->getName();
-            $data['desc'] = strip_tags($product->getDescription());
             $data['url'] = $product->getProductUrl();
             $data['sku'] = $product->getSku();
-            $data['bpr'] = (float)$product->getPrice();
             $data['img'] = Mage::getBaseUrl('media')
                 . self::CATALOG_URL . $product->getImage();
             $this->setProduct($data);
