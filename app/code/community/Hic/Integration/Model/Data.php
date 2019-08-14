@@ -273,8 +273,8 @@ class Hic_Integration_Model_Data extends Varien_Object
             if ($order->getCouponCode()) {
                 $transaction['coup'] = array($order->getCouponCode());
             }
-            if ($order->getDiscountAmount() > 0) {
-                $transaction['ds'] = -1 * $order->getDiscountAmount();
+            if ($order->getDiscountAmount()) {
+                $transaction['ds'] = abs((float)$order->getDiscountAmount());
             }
             $transaction['li'] = $this
                 ->_getCartItems($order->getAllVisibleItems(), false);
