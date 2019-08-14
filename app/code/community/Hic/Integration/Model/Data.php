@@ -273,6 +273,9 @@ class Hic_Integration_Model_Data extends Varien_Object
             if ($order->getGrandTotal()) {
                 $transaction['tt'] = (float)$order->getGrandTotal();
             }
+            if ($order->getTotalQtyOrdered()) {
+                $transaction['qt'] = (float)$order->getTotalQtyOrdered();
+            }
             if ($order->getCouponCode()) {
                 $transaction['coup'] = array($order->getCouponCode());
             }
@@ -280,7 +283,7 @@ class Hic_Integration_Model_Data extends Varien_Object
                 $transaction['ds'] = abs((float)$order->getDiscountAmount());
             }
             $transaction['li'] = $this
-                ->_getCartItems($order->getAllVisibleItems(), false);
+                ->_getCartItems($order->getAllVisibleItems(), true);
             $transaction['sh'] = (float)$order->getShippingAmount();
             $transaction['shm'] = $order->getShippingMethod()
                 ? $order->getShippingMethod() : '';
