@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
 <package>
     <name>Hic_Integration</name>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <stability>stable</stability>
     <license>MIT</license>
     <channel>community</channel>
     <extends/>
-    <summary>This is the official all-in-one HiConversion - Magento connector that enables the use of all web analytics, testing, targeting, personalization, and customer experience optimization capabilities of the HiConversion product suite. This one-time integration will save you from custom tagging and the other implementation pains associated with traditional web analytics, testing, and optimization solutions.</summary>
-    <description>Once live, the extension will provide total data capture and the client-side page modification capabilities needed for running of live adaptive customer experience optimization campaigns. These include:&#xD;
+    <summary>HiConversion - The all-in-one tool for web analytics, testing, targeting, personalization, and CX Optimization.</summary>
+    <description>Once live, the extension will provide accurate and comprehensive data capture, as well as client-side page modification capabilities needed for the running of live adaptive customer experience optimization campaigns:&#xD;
 &#xD;
-Data Capture: We productized our knowledge about the types of data collected by the most advanced web analytics solutions deployed on the Magento stores. We then created an extension that provides a solid data collection right out-of-the-box. There is no need for any additional custom tagging of your site. All other custom events and metric tracking is provisioned through our application interface. &#xD;
+Data Capture: We productized our knowledge about the types of data collected by the most advanced web analytics solutions deployed on Magento stores. We then created an extension that provides solid data collection right out-of-the-box. There is no need for any additional custom tagging of your site. All other custom events and metric tracking is provisioned through our application interface. &#xD;
 &#xD;
-Optimization: The second role for the extension is to enable client-side testing, targeting, personalization, and customer experience optimization. To minimize technical complexity and IT dependency, we provide a visual designer tool that will enable you to visually provision your optimization campaigns. The visual designs are then translated into lines of code that are then transparently executed by the visitor browser during the web page rendering process.</description>
-    <notes>Initial Stable Release</notes>
+Customer Experience Optimization: The second role for the extension is to enable client-side testing, targeting, personalization, and customer experience optimization. To minimize technical complexity and IT dependency, we provide a visual designer tool that enables you to visually provision your optimization campaigns. The visual designs are then translated into lines of code that are transparently executed by the visitor&#x2019;s browser during the web page rendering process.</description>
+    <notes>Some refactoring and commenting per Magento Coding Standards and Best Practices.</notes>
     <authors><author><name>HiConversion</name><user>hiconversion</user><email>dhenrickson@hiconversion.com</email></author></authors>
-    <date>2015-04-21</date>
-    <time>15:49:47</time>
-    <contents><target name="magecommunity"><dir name="Hic"><dir name="Integration"><dir name="Block"><dir name="Html"><file name="Head.php" hash="6b9949c419ce6a98ddc2437d55749914"/></dir><file name="Template.php" hash="aa50189e5d9c57017c5f85fe3140a3cd"/></dir><dir name="Helper"><file name="Data.php" hash="47c1b873a75ef4efb3f1491de5cf1682"/></dir><dir name="Model"><dir name="Container"><file name="Template.php" hash="916c3b28e359054e9e0f3019576b6098"/></dir><file name="Data.php" hash="99c327f2e058e662787fc7a7c48abe2b"/></dir><dir name="etc"><file name="adminhtml.xml" hash="f122c26dfe576f4c09f83abe76424931"/><file name="cache.xml" hash="b67ce021de2a64b796e3ba88e84df601"/><file name="config.xml" hash="b192a565cec62d2eadcac18657515962"/><file name="system.xml" hash="62129b4db99b2ffcc698c68f89712ad1"/></dir></dir></dir></target><target name="mageetc"><dir name="modules"><file name="Hic_Integration.xml" hash="94fd9568fa202ad3d4773331e46d88c2"/></dir></target><target name="magedesign"><dir name="frontend"><dir name="base"><dir name="default"><dir name="layout"><dir name="hic"><file name="hiconversion.xml" hash="01b3d087e71e592a5dadb8ac0ad7c822"/></dir></dir><dir name="template"><dir name="hic"><file name="body.phtml" hash="ca0b99af17fe0f844db8c2fa265ff32f"/><file name="head.phtml" hash="28dbb72df9adce978a552623e74b2bea"/></dir></dir></dir></dir></dir></target></contents>
+    <date>2015-04-24</date>
+    <time>15:48:21</time>
+    <contents><target name="magecommunity"><dir name="Hic"><dir name="Integration"><dir name="Block"><dir name="Html"><file name="Head.php" hash="cffd9d7f79c652047d0d713bfc52a7ae"/></dir><file name="Template.php" hash="711e3c1b282d347a0bd5e3b5aea94538"/></dir><dir name="Helper"><file name="Data.php" hash="56f1cc841b8b2f9109bc33021daf64ef"/></dir><file name="LICENSE.txt" hash="3b58e20f0b691c258d39cc034c5376eb"/><dir name="Model"><dir name="Container"><file name="Template.php" hash="c84267f7b5ea92fbeda5859376b1fa88"/></dir><file name="Data.php" hash="c097173805f43c16c7b9c9220047157d"/></dir><dir name="etc"><file name="adminhtml.xml" hash="f122c26dfe576f4c09f83abe76424931"/><file name="cache.xml" hash="b67ce021de2a64b796e3ba88e84df601"/><file name="config.xml" hash="b192a565cec62d2eadcac18657515962"/><file name="system.xml" hash="62129b4db99b2ffcc698c68f89712ad1"/></dir></dir></dir></target><target name="magedesign"><dir name="frontend"><dir name="base"><dir name="default"><dir name="layout"><dir name="hic"><file name="hiconversion.xml" hash="01b3d087e71e592a5dadb8ac0ad7c822"/></dir></dir><dir name="template"><dir name="hic"><file name="body.phtml" hash="a337202d1f589d299392a3dc6a3da4e3"/><file name="head.phtml" hash="a4d2f163f968f464a7fc8820f03338b8"/></dir></dir></dir></dir></dir></target><target name="mageetc"><dir name="modules"><file name="Hic_Integration.xml" hash="94fd9568fa202ad3d4773331e46d88c2"/></dir></target></contents>
     <compatible/>
-    <dependencies><required><php><min>5.4.0</min><max>5.6.7</max></php></required></dependencies>
+    <dependencies><required><php><min>5.2.6</min><max>5.6.7</max></php></required></dependencies>
 </package>

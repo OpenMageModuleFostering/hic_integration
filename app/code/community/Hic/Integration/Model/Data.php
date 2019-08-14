@@ -1,12 +1,40 @@
 <?php
+/**
+ * HiConversion
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * [http://opensource.org/licenses/MIT]
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * @category Hic
+ * @package Hic_Integration
+ * @Copyright © 2015 HiConversion, Inc. All rights reserved.
+ * @license [http://opensource.org/licenses/MIT] MIT License
+ */
 
+/**
+ * Integration data model
+ *
+ * @category Hic
+ * @package Integration
+ * @author HiConversion <support@hiconversion.com>
+ */
 class Hic_Integration_Model_Data extends Varien_Object
 {
-    protected $_version = "1.0";
-    protected $_platform = "magento";
+    protected $_version = '1.0';
+    protected $_platform = 'magento';
 
     const CATALOG_URL = 'catalog/product/';
 
+    /**
+     * Runs module
+     */
     protected function _construct()
     {
         $this
@@ -24,6 +52,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Return JSON string representing data object
+     *
+     * @return string
+     */
     public function hicData()
     {
         $data = $this->toArray(array('page', 'cart', 'user','tr','version','platform','pid','product'));
@@ -34,31 +67,43 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Returns product information for each product
+     * passed into function
+     *
+     * @param $items
+     * @return array
+     */
     protected function _getCartItems($items)
     {
         $data = array();
         foreach ($items as $i) {
-            $p = Mage::getModel('catalog/product')->load($i->getProductId());
-            if ($p) {
+            $product = Mage::getModel('catalog/product')->load($i->getProductId());
+            if ($product) {
                 $info = array();
                 $info['tt'] = (float)$i->getRowTotalInclTax();
                 $info['ds'] = (float)$i->getDiscountAmount();
                 $info['qt'] = (float)$i->getQty();
-                $info['id'] = $p->getId();
-                $info['url'] = $p->getProductUrl();
-                $info['nm'] = $p->getName();
-                $info['bpr'] = (float)$p->getPrice();
-                $info['pr'] = (float)$p->getFinalPrice();
-                $info['desc'] = strip_tags($p->getShortDescription());
-                $info['img'] = $p->getImageUrl();
-                $info['sku'] = $p->getSku();
-                $info['cat'] = $p->getCategoryIds();
+                $info['id'] = $product->getId();
+                $info['url'] = $product->getProductUrl();
+                $info['nm'] = $product->getName();
+                $info['bpr'] = (float)$product->getPrice();
+                $info['pr'] = (float)$product->getFinalPrice();
+                $info['desc'] = strip_tags($product->getShortDescription());
+                $info['img'] = $product->getImageUrl();
+                $info['sku'] = $product->getSku();
+                $info['cat'] = $product->getCategoryIds();
                 $data[] = $info;
             }
         }
         return $data;
     }
 
+    /**
+     * Returns page route and breadcrumb info
+     *
+     * @return array $this
+     */
     protected function _initPage()
     {
         $crumb = array();
@@ -72,6 +117,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         return $this;
     }
 
+    /**
+     * Returns cart information
+     *
+     * @return array $this
+     */
     protected function _initCart()
     {
         $cart = Mage::getModel('checkout/cart')->getQuote();
@@ -98,6 +148,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Returns user information
+     *
+     * @return array $this
+     */
     protected function _initUser()
     {
         $session = Mage::helper('customer');
@@ -107,7 +162,7 @@ class Hic_Integration_Model_Data extends Varien_Object
             $data['auth'] = $session->isLoggedIn();
             $data['ht'] = false;
             $data['nv'] = true;
-            $data['cg'] = Mage::getSingleton('customer/session')->getCustomerGroupId(); // TODO: Array?
+            $data['cg'] = Mage::getSingleton('customer/session')->getCustomerGroupId();
             $data['sid'] = Mage::getSingleton("core/session")->getEncryptedSessionId();
             if ($customer->getId()) {
                 // Determine if customer has transacted or not.  Must be logged in.
@@ -135,6 +190,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Returns transaction information
+     *
+     * @return array $this
+     */
     protected function _initOrder()
     {
         $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
@@ -143,7 +203,7 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
         $order = Mage::getModel('sales/order')->load($orderId);
         $transaction = array();
-        if ( $order ) {
+        if ($order) {
             if ($order->getIncrementId()) {
                 $transaction['id'] = $order->getIncrementId();
             }
@@ -176,6 +236,11 @@ class Hic_Integration_Model_Data extends Varien_Object
         }
     }
 
+    /**
+     * Returns product information
+     *
+     * @return array $this
+     */
     protected function _initProduct()
     {
         if ($product = Mage::registry('current_product')) {
