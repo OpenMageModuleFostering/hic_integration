@@ -40,6 +40,30 @@ class Hic_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return Mage::getStoreConfig(self::SETTINGS_SITE_ID);
     }
+    
+    /**
+     * Returns Magento Version
+     *
+     * @return string
+     */
+    public function getMageVersion()
+    {
+        return Mage::getVersion();
+    }
+    
+    /**
+     * Returns Magento Edition or empty string if less than version 1.7
+     *
+     * @return string
+     */
+    public function getMageEdition()
+    {
+        if (method_exists('Mage', 'getEdition')) {
+            return Mage::getEdition();
+        } else {
+          return "";
+        }
+    }
 
     /**
      * Determines if module is enabled or not
